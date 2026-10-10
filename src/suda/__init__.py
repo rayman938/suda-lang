@@ -5,4 +5,4 @@ from .errors import SudaError
 from .vm import VirtualMachine, run_source
 
 __all__ = ["SudaError", "VirtualMachine", "compile_source", "run_source"]
-__version__ = "0.5.0"
+__version__ = "0.6.0"

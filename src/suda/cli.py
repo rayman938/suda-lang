@@ -70,6 +70,14 @@ def _parser() -> argparse.ArgumentParser:
     run_bytecode.add_argument("bytecode")
     run_bytecode.add_argument("--max-steps", type=_positive_int, default=1_000_000)
 
+    desktop = commands.add_parser("gui", help="فتح استوديو تعلّم سُدى")
+    desktop.add_argument(
+        "--backend",
+        choices=("tkinter", "pyside6"),
+        default="tkinter",
+        help="واجهة خفيفة مدمجة أو واجهة PySide6 الاختيارية",
+    )
+
     return parser
 
 
@@ -102,6 +110,15 @@ def main(argv: list[str] | None = None) -> int:
         if arguments.command == "run-bytecode":
             machine = VirtualMachine(step_limit=arguments.max_steps, output=print)
             machine.run(read_bytecode(arguments.bytecode))
+            return 0
+        if arguments.command == "gui":
+            if arguments.backend == "pyside6":
+                from .desktop.pyside_app import launch
+
+                return launch()
+            from .desktop.tkinter_app import launch
+
+            launch()
             return 0
     except (SudaError, OSError) as error:
         print(f"خطأ: {error}", file=sys.stderr)
