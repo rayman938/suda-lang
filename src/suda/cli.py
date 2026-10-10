@@ -126,5 +126,9 @@ def main(argv: list[str] | None = None) -> int:
     return 2
 
 
+def studio_main() -> int:
+    return main(["gui"])
+
+
 if __name__ == "__main__":
     raise SystemExit(main())
