@@ -1,0 +1,8 @@
+[package]
+name = "suda-native"
+version = "0.1.0"
+edition = "2021"
+description = "Rust-native compiler core for the Arabic low-level Suda language"
+license = "LicenseRef-Suda-All-Rights-Reserved"
+
+[dependencies]
