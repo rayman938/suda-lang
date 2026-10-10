@@ -4,6 +4,7 @@ from __future__ import annotations
 
 import json
 import math
+import operator
 import zlib
 from dataclasses import dataclass
 from pathlib import Path
@@ -22,6 +23,16 @@ MAX_COMPRESSED_BYTECODE_BYTES = (
     + 13
     + len(COMPRESSED_BYTECODE_MAGIC)
 )
+_NOT_FOLDABLE = object()
+_FOLD_BINARY = {
+    "+": operator.add,
+    "-": operator.sub,
+    "*": operator.mul,
+    "/": operator.truediv,
+    "//": operator.floordiv,
+    "%": operator.mod,
+    "**": operator.pow,
+}
 
 
 @dataclass(frozen=True)
@@ -112,6 +123,89 @@ class BytecodeProgram:
                         raise ValueError(f"لا يقبل {opcode} معاملًا.")
                 else:
                     raise ValueError(f"تعليمة غير معروفة: {opcode}")
+            self._validate_stack(function)
+
+    @staticmethod
+    def _validate_stack(function: CodeObject) -> None:
+        instructions = function.instructions
+        if not instructions:
+            return
+
+        heights = {0: 0}
+        pending = [0]
+        while pending:
+            index = pending.pop()
+            height = heights[index]
+            instruction = instructions[index]
+            opcode = instruction.opcode
+            argument = instruction.argument
+            required = 0
+            change = 0
+
+            if opcode in ("CONSTANT", "LOAD", "MAKE_FUNCTION"):
+                change = 1
+            elif opcode in ("STORE", "STORE_CONST", "POP", "JUMP_IF_FALSE", "JUMP_IF_TRUE"):
+                required = 1
+                change = -1
+            elif opcode == "DUP":
+                required = 1
+                change = 1
+            elif opcode == "BUILD_LIST":
+                required = argument
+                change = 1 - argument
+            elif opcode == "BUILD_MAP":
+                required = argument * 2
+                change = 1 - required
+            elif opcode in ("INDEX", "BINARY"):
+                required = 2
+                change = -1
+            elif opcode == "STORE_INDEX":
+                required = 3
+                change = -3
+            elif opcode == "UNARY":
+                required = 1
+            elif opcode == "CALL":
+                required = argument + 1
+                change = -argument
+            elif opcode == "RETURN":
+                required = 1
+                change = -1
+            elif opcode in ("GET_ITER", "JUMP"):
+                pass
+            elif opcode == "ITER_NEXT":
+                required = 1
+            else:
+                raise ValueError(f"لا يمكن التحقق من مكدس التعليمة {opcode}.")
+
+            if height < required:
+                raise ValueError(f"نقص في مكدس bytecode عند التعليمة {index}.")
+            next_height = height + change
+            if opcode == "RETURN":
+                continue
+
+            if opcode == "JUMP":
+                successors = [(argument, next_height)]
+            elif opcode in ("JUMP_IF_FALSE", "JUMP_IF_TRUE"):
+                successors = [(index + 1, next_height), (argument, next_height)]
+            elif opcode == "ITER_NEXT":
+                successors = [(index + 1, height + 1), (argument, height - 1)]
+            else:
+                successors = [(index + 1, next_height)]
+
+            for target, target_height in successors:
+                if target == len(instructions):
+                    if target_height != 0:
+                        raise ValueError("مكدس bytecode غير فارغ عند نهاية الدالة.")
+                    continue
+                known_height = heights.get(target)
+                if known_height is not None:
+                    if known_height != target_height:
+                        raise ValueError(
+                            f"ارتفاع مكدس bytecode غير متطابق عند التعليمة {target}."
+                        )
+                else:
+                    heights[target] = target_height
+                    pending.append(target)
 
     def to_json(self) -> str:
         try:
@@ -335,6 +429,10 @@ class Compiler:
             raise SudaError(f"تعليمة غير مدعومة: {node.kind}.", SourceLocation(node.line))
 
     def _expression(self, node: Node) -> None:
+        folded = self._fold_numeric_literal(node)
+        if folded is not _NOT_FOLDABLE:
+            self._emit("CONSTANT", folded, node.line)
+            return
         if node.kind == "literal":
             self._emit("CONSTANT", node.value, node.line)
         elif node.kind == "name":
@@ -374,6 +472,53 @@ class Compiler:
             self._emit("CALL", len(node.children) - 1, node.line)
         else:
             raise SudaError(f"تعبير غير مدعوم: {node.kind}.", SourceLocation(node.line))
+
+    def _fold_numeric_literal(self, node: Node) -> Any:
+        if node.kind == "literal":
+            value = node.value
+            return value if type(value) in (int, float) else _NOT_FOLDABLE
+        if node.kind == "unary" and node.value in ("+", "-"):
+            value = self._fold_numeric_literal(node.children[0])
+            if value is _NOT_FOLDABLE:
+                return value
+            result = value if node.value == "+" else -value
+            return result if self._is_foldable_number(result) else _NOT_FOLDABLE
+        if node.kind != "binary" or node.value not in _FOLD_BINARY:
+            return _NOT_FOLDABLE
+
+        left = self._fold_numeric_literal(node.children[0])
+        right = self._fold_numeric_literal(node.children[1])
+        if (
+            left is _NOT_FOLDABLE
+            or right is _NOT_FOLDABLE
+            or type(left) not in (int, float)
+            or type(right) not in (int, float)
+        ):
+            return _NOT_FOLDABLE
+        if node.value == "**":
+            if abs(right) > 10_000:
+                return _NOT_FOLDABLE
+            if (
+                type(left) is int
+                and type(right) is int
+                and right > 1
+                and abs(left) not in (0, 1)
+                and (abs(left).bit_length() - 1) * right + 1 > 4096
+            ):
+                return _NOT_FOLDABLE
+        try:
+            result = _FOLD_BINARY[str(node.value)](left, right)
+        except (ArithmeticError, OverflowError, ValueError):
+            return _NOT_FOLDABLE
+        return result if self._is_foldable_number(result) else _NOT_FOLDABLE
+
+    @staticmethod
+    def _is_foldable_number(value: Any) -> bool:
+        return (
+            type(value) is int and value.bit_length() <= 4096
+        ) or (
+            type(value) is float and math.isfinite(value)
+        )
 
 
 def compile_ast(program: Node) -> BytecodeProgram:
