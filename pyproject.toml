@@ -4,8 +4,8 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "suda-lang"
-version = "0.4.0"
-description = "A small Arabic-first programming language with a bytecode virtual machine"
+version = "0.5.0"
+description = "An Arabic-first programming language prototype with optimized, verified bytecode"
 readme = "README.md"
 requires-python = ">=3.11"
 authors = [{ name = "Suda Language Contributors" }]
