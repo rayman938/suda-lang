@@ -71,6 +71,23 @@ class RuntimeTests(unittest.TestCase):
     def test_arithmetic_and_output(self) -> None:
         self.assertEqual(run_source('اطبع(2 + 3 * 4)\n'), ["14"])
 
+    def test_compiler_folds_safe_numeric_constants(self) -> None:
+        program = compile_source("نتيجة = (2 + 3) * 4\nاطبع(نتيجة)\n")
+        instructions = program.functions[program.entry].instructions
+        self.assertEqual(run_source("نتيجة = (2 + 3) * 4\nاطبع(نتيجة)\n"), ["20"])
+        self.assertNotIn("BINARY", [instruction.opcode for instruction in instructions])
+        self.assertIn(
+            ("CONSTANT", 20),
+            [(instruction.opcode, instruction.argument) for instruction in instructions],
+        )
+
+    def test_compiler_leaves_failing_constant_expressions_for_runtime(self) -> None:
+        program = compile_source("اطبع(1 / 0)\n")
+        instructions = program.functions[program.entry].instructions
+        self.assertIn("BINARY", [instruction.opcode for instruction in instructions])
+        with self.assertRaisesRegex(SudaError, "السطر 1:.*القسمة"):
+            VirtualMachine().run(program)
+
     def test_functions_loops_and_global_lookup(self) -> None:
         source = """\
 ثابت حد = 5
@@ -283,6 +300,49 @@ class BytecodeTests(unittest.TestCase):
             ],
         }
         with self.assertRaisesRegex(SudaError, "وجهة قفز"):
+            BytecodeProgram.from_json(json.dumps(payload))
+
+    def test_rejects_bytecode_stack_underflow(self) -> None:
+        payload = {
+            "format": "suda-bytecode",
+            "version": 1,
+            "entry": 0,
+            "functions": [
+                {
+                    "name": "main",
+                    "parameters": [],
+                    "instructions": [
+                        ["POP", None, 1],
+                        ["CONSTANT", None, 1],
+                        ["RETURN", None, 1],
+                    ],
+                }
+            ],
+        }
+        with self.assertRaisesRegex(SudaError, "نقص في مكدس bytecode"):
+            BytecodeProgram.from_json(json.dumps(payload))
+
+    def test_rejects_bytecode_with_inconsistent_branch_stack(self) -> None:
+        payload = {
+            "format": "suda-bytecode",
+            "version": 1,
+            "entry": 0,
+            "functions": [
+                {
+                    "name": "main",
+                    "parameters": [],
+                    "instructions": [
+                        ["CONSTANT", True, 1],
+                        ["JUMP_IF_FALSE", 4, 1],
+                        ["CONSTANT", 1, 1],
+                        ["JUMP", 4, 1],
+                        ["CONSTANT", None, 1],
+                        ["RETURN", None, 1],
+                    ],
+                }
+            ],
+        }
+        with self.assertRaisesRegex(SudaError, "ارتفاع مكدس bytecode غير متطابق"):
             BytecodeProgram.from_json(json.dumps(payload))
 
     def test_rejects_oversized_bytecode(self) -> None:
