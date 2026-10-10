@@ -28,9 +28,10 @@ py -3 -m pip install --upgrade "git+https://github.com/rayman938/suda-lang.git";
 python3 -m pip install --upgrade "git+https://github.com/rayman938/suda-lang.git" && python3 -m suda gui
 ```
 
-يفتح الأمر واجهة Tkinter الخفيفة المرفقة مع Python. بعد التثبيت، تقدر تفتحها
-مباشرةً بالأمر `suda-studio`، أو بـ`py -3 -m suda gui` على Windows. تحتاج
-واجهة PySide6 الاختيارية إلى تثبيت منفصل كما هو موضح أدناه.
+يفتح الأمر واجهة Tkinter الخفيفة. تأكد أن تثبيت Python يحتوي Tkinter؛ بعض
+توزيعات Linux تحتاج تثبيت حزمة النظام `python3-tk` أولًا. بعد التثبيت، تقدر
+تفتح الواجهة مباشرةً بالأمر `suda-studio`، أو بـ`py -3 -m suda gui` على
+Windows. تحتاج واجهة PySide6 الاختيارية إلى تثبيت منفصل كما هو موضح أدناه.
 
 إذا تريد الأمثلة والدليل، نزّل المستودع أيضًا:
 
