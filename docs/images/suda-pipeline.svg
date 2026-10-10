@@ -1,0 +1,25 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1200 220" role="img" aria-labelledby="title description">
+  <title id="title">مراحل تنفيذ برنامج سُدى</title>
+  <desc id="description">من ملف المصدر العربي يمر البرنامج بالمحلل ثم المترجم إلى bytecode وبعدها إلى الآلة الافتراضية.</desc>
+  <rect width="1200" height="220" rx="24" fill="#f3f7fb"/>
+  <text x="600" y="48" text-anchor="middle" fill="#15243b" font-family="Segoe UI, Tahoma, Arial, sans-serif" font-size="24" font-weight="700">من النص العربي إلى التنفيذ</text>
+  <g font-family="Segoe UI, Tahoma, Arial, sans-serif" text-anchor="middle">
+    <rect x="930" y="88" width="200" height="76" rx="16" fill="#dbeafe" stroke="#4b83c3" stroke-width="2"/>
+    <text x="1030" y="120" fill="#16375b" font-size="20" font-weight="700">ملف سُدى</text>
+    <text x="1030" y="145" fill="#385a7b" font-size="15">مصدر UTF-8</text>
+    <rect x="660" y="88" width="200" height="76" rx="16" fill="#dcfce7" stroke="#46a36a" stroke-width="2"/>
+    <text x="760" y="120" fill="#16452b" font-size="20" font-weight="700">المحلل والمترجم</text>
+    <text x="760" y="145" fill="#346649" font-size="15">رموز ← AST</text>
+    <rect x="390" y="88" width="200" height="76" rx="16" fill="#fef3c7" stroke="#d6a83b" stroke-width="2"/>
+    <text x="490" y="120" fill="#5b4213" font-size="20" font-weight="700">bytecode</text>
+    <text x="490" y="145" fill="#80672c" font-size="15">تعليمات متحققة</text>
+    <rect x="120" y="88" width="200" height="76" rx="16" fill="#ede9fe" stroke="#8870c6" stroke-width="2"/>
+    <text x="220" y="120" fill="#38286d" font-size="20" font-weight="700">الآلة الافتراضية</text>
+    <text x="220" y="145" fill="#594b83" font-size="15">تنفيذ بحدود واضحة</text>
+  </g>
+  <g fill="none" stroke="#6b8298" stroke-width="3" stroke-linecap="round" stroke-linejoin="round">
+    <path d="M914 126h-42m8-8-8 8 8 8"/>
+    <path d="M644 126h-42m8-8-8 8 8 8"/>
+    <path d="M374 126h-42m8-8-8 8 8 8"/>
+  </g>
+</svg>

@@ -1,0 +1,28 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1200 360" role="img" aria-labelledby="title description">
+  <title id="title">سُدى — لغة برمجة عربية</title>
+  <desc id="description">غلاف مرسوم لسُدى مع مثال برمجي بالعربية وتدفق bytecode.</desc>
+  <defs>
+    <linearGradient id="background" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0" stop-color="#101b36"/>
+      <stop offset="1" stop-color="#243c61"/>
+    </linearGradient>
+    <linearGradient id="glow" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0" stop-color="#5eead4"/>
+      <stop offset="1" stop-color="#60a5fa"/>
+    </linearGradient>
+  </defs>
+  <rect width="1200" height="360" rx="28" fill="url(#background)"/>
+  <circle cx="1000" cy="180" r="112" fill="#60a5fa" opacity=".08"/>
+  <circle cx="1000" cy="180" r="82" fill="none" stroke="url(#glow)" stroke-width="2" opacity=".8"/>
+  <circle cx="1000" cy="180" r="59" fill="#132743" stroke="#5eead4" stroke-width="2"/>
+  <path d="M979 153 950 180l29 27M1021 153l29 27-29 27M1010 140l-20 80" fill="none" stroke="#b7f7ec" stroke-width="7" stroke-linecap="round" stroke-linejoin="round"/>
+  <rect x="74" y="70" width="610" height="220" rx="18" fill="#0b1429" stroke="#516784"/>
+  <circle cx="108" cy="103" r="7" fill="#fb7185"/>
+  <circle cx="132" cy="103" r="7" fill="#fbbf24"/>
+  <circle cx="156" cy="103" r="7" fill="#34d399"/>
+  <text x="640" y="147" text-anchor="end" direction="rtl" fill="#e8f4ff" font-family="Segoe UI, Tahoma, Arial, sans-serif" font-size="46" font-weight="700">سُدى</text>
+  <text x="640" y="183" text-anchor="end" direction="rtl" fill="#a9c4df" font-family="Segoe UI, Tahoma, Arial, sans-serif" font-size="20">لغة برمجة عربية — نموذج أولي قابل للتجربة</text>
+  <text x="112" y="229" fill="#80e8d4" font-family="Consolas, monospace" font-size="19">لكل عدد في مدى(1, 6):</text>
+  <text x="146" y="261" fill="#d4e5f7" font-family="Consolas, monospace" font-size="19">اطبع("أهلًا يا سُدى")</text>
+  <text x="1000" y="286" text-anchor="middle" fill="#b9d7f2" font-family="Segoe UI, Tahoma, Arial, sans-serif" font-size="17">نحو عربي • مترجم • آلة افتراضية</text>
+</svg>
